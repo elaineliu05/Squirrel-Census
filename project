@@ -1,0 +1,75 @@
+# Import packages
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+# Configure plot resolution
+sns.set(rc={"figure.dpi": 96})
+
+"""
+This dataset contain 2018 squirrel sightings in New York City's Central Park, including location coordinates, age, 
+primary and secondary fur color, elevation, activities, communications, and interactions between squirrels and with humans. 
+The dataset contains 3023 rows (observations) and 36 columns (variables), and each row corresponds to all measurements 
+performed for a single squirrel sighting.
+"""
+  
+data_dir = Path("data/")
+squirrel_csv = data_dir / "nyc_squirrel_census_2018" / "nyc_squirrels.csv"
+squirrels = pd.read_csv(squirrel_csv)
+
+# The bar chart below is a visual representation of the number of squirrels for each primary fur type. 
+# The purpose of the bar chart is to understand the distribution of primary fur type among the observed squirrel population.  
+# The dominant primary fur color among the squirrel population is gray, followed by cinnamon and then black.
+sns.displot(x="primary_fur_color", data=squirrels, bins=30);
+
+# The below scatterplot is a visual representation of the location coordinates where squirrels in Central Park have been sighted. 
+# The purpose of this scatterplot is to understand where squirrels are spotted based on the variables longitude, latitude, and their fur color. 
+# As seen by our previous data, gray squirrels have the most dominant presence, and based on this scatterplot they also have the greatest spread across Central Park.
+sns.relplot(
+    x="lat",            #  x axis variable - Lat
+    y="long",            # y axis variable - Long
+    data=squirrels,
+    hue= "primary_fur_color", # seperated by fur color
+    kind="scatter",
+    size=None,
+);
+
+# Data Aggregation 1 (Temporal Analysis):
+# This table illustrates the number of squirrels that were spotted on each day. 
+# As seen, squirrel counts vary per day but appear to taper off towards the end of the timeframe.
+(
+    squirrels
+    [["date"]]
+    .groupby(["date"], as_index=False)
+    .value_counts()
+)
+
+# Data Aggregation 1 (with filter):
+# Filters the original table to illustrate the number of gray squirrels spotted per day.
+gray_squirrels = squirrels[(squirrels["primary_fur_color"] == "Gray")]
+(
+    gray_squirrels
+    [["date",]]
+    .groupby(["date"], as_index=False)
+    .value_counts()
+)
+
+# Data Aggregation 2:
+# The table below shows the correlation between squirrel fur color and sounds. Gray squirrels make the most kuks, quaas, 
+# and moans compared to both black and cinnamon-colored squirrels. Gray squirrels make up the majority of the squirrel population 
+# based on the first data visualization, which explains why the quantity of gray squirrel vocal sounds is much greater.
+(
+    squirrels
+    [["primary_fur_color", "kuks","quaas","moans"]]
+    .groupby(["primary_fur_color"], as_index=False)
+    .agg("sum")
+)
+
+
+
+
+
+
+  
